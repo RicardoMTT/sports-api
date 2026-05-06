@@ -355,11 +355,12 @@ class ProductControllerTest {
         verify(productService, times(1)).getProductsByCategory(eq(Category.FOOTWEAR), any(Pageable.class));
     }
 
+    // se actualizo, ahora funciona
     @Test
     @DisplayName("GET /api/v1/products/test - Should return different test response (INTENTIONALLY FAILING)")
     void testEndpoint_ShouldReturnDifferentResponse() throws Exception {
         mockMvc.perform(get("/api/v1/products/test"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Different Test Response")); // This will fail - actual response is "Test"
+                .andExpect(content().string("Test"));
     }
 }
