@@ -7,6 +7,14 @@ on:
   pull_request:
     branches: [ master ]
 
+#El PR (El Examen de Admisión): El código está "en cuarentena". Se ejecuta solo el CI (build-and-test).
+#Si reprueba , se bloquea el paso. Si aprueba, el botón de Merge se enciende.
+#El Merge (La Aprobación Humana): Un compañero revisa tu código, confía en la luz verde que le dio
+#GitHub Actions y aprueba la fusión.
+#El Push a Master (La Entrega Automática): Para Git, ese merge es un push a la rama principal.
+# El pipeline se dispara desde cero: vuelve a pasar el CI (para garantizar que la mezcla final no rompió
+#nada) y, como ahora sí cumple la condición de tu if, activa el CD (deploy) para subir la imagen a Docker Hub y mandar el Webhook a Render.
+#
 jobs:
 
   # ── JOB 1: CI — Compilar y testear ──────────────────────────
