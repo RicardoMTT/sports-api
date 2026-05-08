@@ -37,11 +37,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("ProductController Tests")
 class ProductControllerTest {
 
-    // Usamos el @Mock para simular el ProductService
+    // Usamos el @Mock para crear objetos mockados de dependencias
     @Mock
     private ProductService productService;
 
-    // Usamos el @InjectMocks para inyectar el ProductService en el ProductController
+    // Usamos el @InjectMocks sirve para crear una instancia del ProductController
+    // que estas probando e inyectar los objetos mockeados como ProductService
     @InjectMocks
     private ProductController productController;
 
@@ -98,9 +99,11 @@ class ProductControllerTest {
     @Test
     @DisplayName("GET /api/v1/products - Should return all products when no filters provided")
     void getAllProducts_NoFilters_ShouldReturnAllProducts() throws Exception {
-        // Usamos el when para simular el comportamiento del ProductService
+        // Usamos el when para simular el comportamiento de un servicio
+        // Arrange
         when(productService.getAllProducts(any(Pageable.class))).thenReturn(samplePageResponse);
 
+        // Act
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -116,6 +119,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.totalElements", is(1)))
                 .andExpect(jsonPath("$.totalPages", is(1)));
 
+        // Assert
         verify(productService, times(1)).getAllProducts(any(Pageable.class));
         verify(productService, never()).searchProducts(anyString(), any(Pageable.class));
         verify(productService, never()).getProductsByCategory(any(Category.class), any(Pageable.class));
