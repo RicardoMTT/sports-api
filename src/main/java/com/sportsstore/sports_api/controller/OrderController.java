@@ -40,4 +40,9 @@ public class OrderController {
 
         return ResponseEntity.ok(orderService.getOrderDetail(currentUser.getId(), orderId));
     }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Test");
+    }
 }
