@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -27,14 +29,19 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<PageResponse<ProductResponse>> getAllProducts(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Category category,
+            @RequestParam(required = false) String category,
             // PageableDefault establece valores por defecto si el cliente no los envía
             @PageableDefault(page = 0, size = 6, sort = "name") Pageable pageable) {
 
         if (name != null && !name.isBlank()) {
             return ResponseEntity.ok(productService.searchProducts(name, pageable));
-        } else if (category != null) {
-            return ResponseEntity.ok(productService.getProductsByCategory(category, pageable));
+        } else if (category != null && !category.isBlank()) {
+            Category parsed = parseCategory(category);
+            if (parsed == null) {
+                // Categoría desconocida → lista vacía
+                return ResponseEntity.ok(new PageResponse<>(List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0, 0));
+            }
+            return ResponseEntity.ok(productService.getProductsByCategory(parsed, pageable));
         } else {
             return ResponseEntity.ok(productService.getAllProducts(pageable));
         }
@@ -42,9 +49,22 @@ public class ProductController {
 
     @GetMapping("/category/{category}")
     public ResponseEntity<PageResponse<ProductResponse>> getProductsByCategory(
-            @PathVariable Category category,
+            @PathVariable String category,
             @PageableDefault(page = 0, size = 10, sort = "price") Pageable pageable) {
-        return ResponseEntity.ok(productService.getProductsByCategory(category, pageable));
+        Category parsed = parseCategory(category);
+        if (parsed == null) {
+            return ResponseEntity.ok(new PageResponse<>(List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0, 0));
+        }
+        return ResponseEntity.ok(productService.getProductsByCategory(parsed, pageable));
+    }
+
+    /** Convierte un String a Category. Retorna null si el valor no existe en el enum. */
+    private Category parseCategory(String value) {
+        try {
+            return Category.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     @GetMapping("/{id}")
