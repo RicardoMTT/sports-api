@@ -1,5 +1,5 @@
 # .github/workflows/ci-cd.yml
-name: Sports API — CI/CD
+name: Music API — CI/CD
 
 on:
   push:
@@ -50,25 +50,24 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Crear base de datos SportsStoreDB
-      - name: Crear base de datos SportsStoreDB
+      # Crear base de datos MusicStoreDB
+      - name: Crear base de datos MusicStoreDB
         run: |
-          # Esperamos un momento a que el servicio esté listo internamente
           sleep 20
           docker exec ${{ job.services.sqlserver.id }} /opt/mssql-tools18/bin/sqlcmd \
             -S localhost -U sa -P 'Indiegente123$' \
-            -Q "CREATE DATABASE SportsStoreDB" \
+            -Q "CREATE DATABASE MusicStoreDB" \
             -No
 
-      # Compilar el proyecto, compilar se refiere a la compilación de código fuente que genera un archivo .jar
+      # Compilar el proyecto
       - name: Compilar
-        run: mvn clean compile -q
+        run: mvn clean compile -q -Dmaven.wagon.http.retryHandler.count=3
 
-      # Ejecutar tests, mvn test ejecuta los tests unitarios del proyecto
+      # Ejecutar tests
       - name: Ejecutar tests
-        run: mvn test
+        run: mvn test -Dmaven.wagon.http.retryHandler.count=3
         env:
-          SPRING_DATASOURCE_URL: jdbc:sqlserver://localhost:1433;databaseName=SportsStoreDB;encrypt=false
+          SPRING_DATASOURCE_URL: jdbc:sqlserver://localhost:1433;databaseName=MusicStoreDB;encrypt=false
           SPRING_DATASOURCE_USERNAME: sa
           SPRING_DATASOURCE_PASSWORD: Indiegente123$
 
@@ -98,7 +97,7 @@ jobs:
           cache: maven
 
       - name: Generar JAR
-        run: mvn clean package -DskipTests
+        run: mvn clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=3
 
       - name: Login a Docker Hub
         uses: docker/login-action@v3
@@ -111,7 +110,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/sports-api:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/music-api:latest
 
       # Step creado para desplegar en Render
       - name: Desplegar en Render
