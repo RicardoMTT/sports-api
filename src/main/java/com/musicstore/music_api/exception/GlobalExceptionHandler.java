@@ -7,6 +7,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -80,6 +81,16 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
 
+        return buildResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingParam(MissingServletRequestParameterException ex) {
+        String paramName = ex.getParameterName();
+        String message = switch (paramName) {
+            case "email" -> "El parámetro 'email' es obligatorio para identificar al usuario.";
+            default      -> "Falta el parámetro requerido: '" + paramName + "'.";
+        };
         return buildResponse(HttpStatus.BAD_REQUEST, message);
     }
 }
