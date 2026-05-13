@@ -58,7 +58,6 @@ public class AuthenticationService {
 
         // 4. Generar el JWT para este nuevo usuario
         String jwtToken = jwtService.generateToken(user);
-        String accessToken  = jwtService.generateToken(user);
         String refreshToken = refreshTokenService.createRefreshToken(user).getToken();
         UserDto userDto     = new UserDto(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
 

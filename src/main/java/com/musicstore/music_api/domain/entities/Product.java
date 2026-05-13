@@ -33,10 +33,10 @@ public class Product extends Auditable {
 
     public Product() {}
 
-    public Product(String brand, String name, BigDecimal price, Integer stock, Category category,
+    public Product(String name, String brand, BigDecimal price, Integer stock, Category category,
                    String imageUrl) {
-        this.brand = brand;
         this.name = name;
+        this.brand = brand;
         this.price = price;
         this.stock = stock;
         this.category = category;
