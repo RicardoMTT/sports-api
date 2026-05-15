@@ -40,11 +40,23 @@ public class SecurityConfig {
 
                 // 3. Configuración de Rutas
                 .authorizeHttpRequests(auth -> auth
+                        // Swagger UI y OpenAPI spec — acceso público
+                        // Para que las rutas de Swagger estén disponibles publicamente
+                        .requestMatchers(
+                            "/swagger-ui/**",
+                            "/swagger-ui.html",
+                            "/v3/api-docs/**"
+                        ).permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        // Health checks — públicos para balanceadores de carga y monitoreo externo
+                        .requestMatchers("/api/v1/health/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // Métricas — público (solo desarrollo, restringir en producción)
+                        .requestMatchers("/actuator/metrics/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/shopping/**").authenticated()  // ← esto no cambia
-                        .requestMatchers("/api/v1/orders/**").authenticated()   // ← nueva línea
+                        .requestMatchers("/api/v1/shopping/**").authenticated()
+                        .requestMatchers("/api/v1/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
 

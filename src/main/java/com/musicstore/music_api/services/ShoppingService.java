@@ -78,9 +78,15 @@ public class ShoppingService {
             for (CartItem item : cart.getItems()) {
                 Product product = item.getProduct();
 
-                // ANTES: throw new RuntimeException("Stock insuficiente para: " + product.getName())
-                // AHORA: InsufficientStockException → GlobalExceptionHandler lo captura como 409
-                if (product.getStock() < item.getQuantity()) {
+
+                // Una sola operación de decremento
+                // Descuenta y verifica stock al mismo tiempo
+                // si 2 usuarios llegan juntos , solo uno afecta filas , el otro recibe 0
+                int updated = productRepository.decrementStock(product.getId(), item.getQuantity());
+                if (updated == 0){
+                    // si 2 usuarios llegan juntos , solo uno afecta filas , el otro recibe 0
+                    // por lo que no se actualiza el stock
+                    // No hay race condition
                     throw new InsufficientStockException(
                             "Stock insuficiente para '" + product.getName() + "'. " +
                                     "Disponible: " + product.getStock() + ", " +
@@ -88,8 +94,11 @@ public class ShoppingService {
                     );
                 }
 
-                product.setStock(product.getStock() - item.getQuantity());
-                productRepository.save(product);
+                // NIVEL 2 — @Version sigue activo en la entidad Product
+                // Protege contra modificaciones concurrentes de OTROS campos
+                // (precio, nombre, categoría) que un admin pudiera estar cambiando
+                // en paralelo. No hace falta llamarlo aquí — Hibernate lo gestiona
+                // automáticamente cuando alguien más haga save() sobre ese producto.
 
                 order.addItem(new OrderItem(product, item.getQuantity(), product.getPrice()));
             }

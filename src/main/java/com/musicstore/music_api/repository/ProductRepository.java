@@ -5,6 +5,7 @@ import com.musicstore.music_api.domain.enums.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,5 +22,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // Spring boot leera el parametro pageable e inyectara el LIMIT Y OFFSET en el SQL
     Page<Product> findByCategory(Category category, Pageable pageable);
+
+
+
+    //
+    @Modifying
+    @Query("UPDATE Product p SET p.stock = p.stock - :qty WHERE p.id = :id AND p.stock >= :qty")
+    int decrementStock(@Param("id") Long id , @Param("qty") int qty);
 }
 

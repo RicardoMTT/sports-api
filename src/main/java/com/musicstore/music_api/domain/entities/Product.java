@@ -24,6 +24,8 @@ public class Product extends Auditable {
     private Category category;
 
     // NUEVO CAMPO: Control de concurrencia optimista
+    // Este campo lo gestiona JPA automáticamente , le dice a sql que incluya el campo version en las sentencias sql
+    // en el where de las sentencias sql
     @Version
     private Long version;
 
