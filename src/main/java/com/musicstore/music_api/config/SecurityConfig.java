@@ -1,5 +1,6 @@
 package com.musicstore.music_api.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -53,8 +54,10 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         // Métricas — público (solo desarrollo, restringir en producción)
                         .requestMatchers("/actuator/metrics/**").permitAll()
+                        .requestMatchers("/actuator/env/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/users/**").authenticated()
                         .requestMatchers("/api/v1/shopping/**").authenticated()
                         .requestMatchers("/api/v1/orders/**").authenticated()
                         .anyRequest().authenticated()
@@ -63,6 +66,15 @@ public class SecurityConfig {
                 // 4. Manejo de Sesiones (Stateless)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // 5. Sin token válido → 401 (no 403)
+                // Spring Security 6 devuelve 403 por defecto cuando no hay autenticación.
+                // Este entry point lo corrige para devolver 401 Unauthorized correctamente.
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autenticado")
+                        )
                 )
 
                 .authenticationProvider(authenticationProvider)
